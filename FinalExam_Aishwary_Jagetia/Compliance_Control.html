@@ -1,0 +1,354 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Final Exam</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-04-27"><meta name="DC.source" content="Compliance_Control.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Final Exam</h1><!--introduction--><p>By- Aishwary Jagetia</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Notations: For a given variable, x, dx is its time derivative, ddx is</a></li><li><a href="#2">specify your initial and final condition.</a></li><li><a href="#3">Implement the Iterative Learning control for set point tracking.</a></li><li><a href="#4">Compliance Control</a></li></ul></div><h2 id="1">Notations: For a given variable, x, dx is its time derivative, ddx is</h2><p>2nd-order derivative.</p><pre class="codeinput">clc
+clear <span class="string">all</span>;
+close <span class="string">all</span>;
+<span class="comment">% the following parameters for the arm</span>
+<span class="keyword">global</span> l1 l2
+I1=10; I2=10; m1=5; r1=.5; m2=5; r2=.5; l1=1; l2=1; g=9.8;
+</pre><h2 id="2">specify your initial and final condition.</h2><pre class="codeinput">qi = [1.0;1.0];
+X = ForwardKinematics(qi(1),qi(2));
+x0= [qi(1),qi(2),0,0,X(1),X(2)];
+tf=5;
+<span class="keyword">global</span> torque Force
+torque = [];
+</pre><h2 id="3">Implement the Iterative Learning control for set point tracking.</h2><pre class="codeinput">options = odeset(<span class="string">'RelTol'</span>,1e-4,<span class="string">'AbsTol'</span>,[1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 1e-4]);
+[T,X] = ode45(@(t,x) ComplianceControl(t,x),[0 tf],x0, options);
+
+figure(<span class="string">'Name'</span>,<span class="string">'End effector position Compliance Control'</span>);
+comet(X(:,5), X(:,6));
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'y'</span>)
+axis([0 5 0 5])
+
+figure(<span class="string">'Name'</span>,<span class="string">'End effector position Compliance Control'</span>);
+plot(T, X(:,5));
+xlabel(<span class="string">'time'</span>)
+ylabel(<span class="string">'x'</span>)
+
+figure(<span class="string">'Name'</span>,<span class="string">'Reaction Force: Compliance Control'</span>);
+plot(T, Force(1,1:size(T,1)),<span class="string">'-'</span>);
+hold <span class="string">on</span>
+plot(T, Force(2,1:size(T,1)),<span class="string">'r--'</span>);
+xlabel(<span class="string">'time'</span>)
+ylabel(<span class="string">'Force at the end effector'</span>)
+
+figure(<span class="string">'Name'</span>,<span class="string">'Theta_1 under Compliance Control'</span>);
+plot(T, X(:,1),<span class="string">'r-'</span>);
+xlabel(<span class="string">'time'</span>)
+ylabel(<span class="string">'Theta1'</span>)
+
+figure(<span class="string">'Name'</span>,<span class="string">'Theta_2 under Compliance Control'</span>);
+plot(T, X(:,2),<span class="string">'r--'</span>);
+xlabel(<span class="string">'time'</span>)
+ylabel(<span class="string">'Theta2'</span>)
+
+figure(<span class="string">'Name'</span>,<span class="string">'Torque: Compliance Control'</span>);
+plot(T, torque(1,1:size(T,1)),<span class="string">'-'</span>);
+hold <span class="string">on</span>
+plot(T, torque(2,1:size(T,1)),<span class="string">'r--'</span>);
+xlabel(<span class="string">'time'</span>)
+ylabel(<span class="string">'torque'</span>)
+hold <span class="string">off</span>
+torque=[];
+</pre><h2 id="4">Compliance Control</h2><pre class="codeinput"><span class="keyword">function</span> dx = ComplianceControl(t,x)
+    Xd = [2.0;0.5]; <span class="comment">% Desired end effector position</span>
+    Xe = x(5:6,1); <span class="comment">% Current end effector position</span>
+
+    theta=x(1:2,1); <span class="comment">% [x1;x2]=[x(1);x(2)]</span>
+    dtheta=x(3:4,1); <span class="comment">% [x1_dot;x2_dot]=[x(3);x(4)]</span>
+
+    <span class="keyword">global</span> l1 l2
+    I1=10;  I2 = 10; m1=5; r1=.5; m2=5; r2=.5; l1=1; l2=1; g=9.8;
+
+    <span class="comment">% we compute the parameters in the dynamic model</span>
+    a = I1+I2+m1*r1^2+ m2*(l1^2+ r2^2);
+    b = m2*l1*r2;
+    d = I2+ m2*r2^2;
+
+    <span class="keyword">global</span> M C J he
+    M = [a+2*b*cos(x(2)), d+b*cos(x(2));
+        d+b*cos(x(2)), d];
+    C = [-b*sin(x(2))*x(4), -b*sin(x(2))*(x(3)+x(4)); b*sin(x(2))*x(3),0];
+
+    invM = inv(M);
+    invMC= inv(M)*C;
+
+    J = getJacobian(theta(1),theta(2)); <span class="comment">% Current Jacobian</span>
+
+    tau = Controler(Xd,Xe,theta,dtheta);
+
+    <span class="keyword">global</span> torque
+    torque = [torque, tau];
+
+    dx = zeros(6,1);
+    dx(1)= x(3); <span class="comment">%dtheta1</span>
+    dx(2)= x(4); <span class="comment">%dtheta2</span>
+    dx(3:4) = -invMC* x(3:4) + invM*tau - invM*(transpose(J)*he);
+    dx(5:6)= J*dx(3:4);
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> tau = Controler(Xd,Xe,theta,dtheta)
+
+   <span class="keyword">global</span> he Force
+   Xr = [1.8; 0]; <span class="comment">% Wall location</span>
+   Kd = [6 0; 0 4];
+   <span class="comment">% Kd makes sure that the tracking performance is optimum and it shows</span>
+   <span class="comment">% how jerky the system is. Here we have kept x higher than y to control</span>
+   <span class="comment">% the system in x direction. Therefore Kd is small where contact forces</span>
+   <span class="comment">% are low.</span>
+   Bd = [1 0; 0 1];
+   <span class="comment">% Bd is the damping coef which takes care of transient behaviour which</span>
+   <span class="comment">% smooths the system and also controls the rate aslo</span>
+   K = [1000 0; 0 1000];
+   <span class="keyword">if</span> (Xe(1) &gt;= Xr(1))
+       he = K*(Xr - Xe);
+   <span class="keyword">else</span>
+       he = [0; 0];
+   <span class="keyword">end</span>
+   Force = [Force, he];
+
+   P_e = Xd - Xe; <span class="comment">% Position error</span>
+
+   <span class="keyword">global</span> J
+   tau = J.'*(Kd*P_e - Bd*J*dtheta) + he;
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> [qd] = InverseKinematics(x, y)
+    <span class="keyword">global</span> l1 l2
+    q2 = acos((x*x + y*y - l1*l1 - l2*l2)/(2*l1*l2));
+    q1 = atan2(y, x) - atan2((l2*sin(q2)), (l1 + l2*cos(q2)));
+    qd = [q1;q2;];
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> [X] = ForwardKinematics(q1, q2)
+    <span class="keyword">global</span> l1 l2
+    x = l1*cos(q1) + l2*cos(q1 + q2);
+    y = l1*sin(q1) + l2*sin(q1 + q2);
+    X = [x;y;];
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> [J] = getJacobian(q1, q2)
+    <span class="keyword">global</span> l1 l2
+    j11 = -l1*sin(q1) - l2*sin(q1+q2);
+    j12 = -l2*sin(q1+q2);
+    j21 = l1*cos(q1) + l2*cos(q1+q2);
+    j22 = l2*cos(q1+q2);
+    J = [j11, j12; j21, j22];
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="Compliance_Control_01.png" alt=""> <img vspace="5" hspace="5" src="Compliance_Control_02.png" alt=""> <img vspace="5" hspace="5" src="Compliance_Control_03.png" alt=""> <img vspace="5" hspace="5" src="Compliance_Control_04.png" alt=""> <img vspace="5" hspace="5" src="Compliance_Control_05.png" alt=""> <img vspace="5" hspace="5" src="Compliance_Control_06.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Final Exam
+% By- Aishwary Jagetia
+%% Notations: For a given variable, x, dx is its time derivative, ddx is
+% 2nd-order derivative. 
+clc
+clear all;
+close all;
+% the following parameters for the arm
+global l1 l2
+I1=10; I2=10; m1=5; r1=.5; m2=5; r2=.5; l1=1; l2=1; g=9.8;
+
+%% specify your initial and final condition.
+qi = [1.0;1.0];
+X = ForwardKinematics(qi(1),qi(2));
+x0= [qi(1),qi(2),0,0,X(1),X(2)];
+tf=5;
+global torque Force
+torque = [];
+
+%% Implement the Iterative Learning control for set point tracking.
+options = odeset('RelTol',1e-4,'AbsTol',[1e-4, 1e-4, 1e-4, 1e-4, 1e-4, 1e-4]);
+[T,X] = ode45(@(t,x) ComplianceControl(t,x),[0 tf],x0, options);
+
+figure('Name','End effector position Compliance Control');
+comet(X(:,5), X(:,6));
+xlabel('x')
+ylabel('y')
+axis([0 5 0 5])
+
+figure('Name','End effector position Compliance Control');
+plot(T, X(:,5));
+xlabel('time')
+ylabel('x')
+
+figure('Name','Reaction Force: Compliance Control');
+plot(T, Force(1,1:size(T,1)),'-');
+hold on
+plot(T, Force(2,1:size(T,1)),'rREPLACE_WITH_DASH_DASH');
+xlabel('time')
+ylabel('Force at the end effector')
+
+figure('Name','Theta_1 under Compliance Control');
+plot(T, X(:,1),'r-');
+xlabel('time')
+ylabel('Theta1')
+
+figure('Name','Theta_2 under Compliance Control');
+plot(T, X(:,2),'rREPLACE_WITH_DASH_DASH');
+xlabel('time')
+ylabel('Theta2')
+
+figure('Name','Torque: Compliance Control');
+plot(T, torque(1,1:size(T,1)),'-');
+hold on
+plot(T, torque(2,1:size(T,1)),'rREPLACE_WITH_DASH_DASH');
+xlabel('time')
+ylabel('torque')
+hold off
+torque=[];
+    
+%% Compliance Control
+function dx = ComplianceControl(t,x)
+    Xd = [2.0;0.5]; % Desired end effector position
+    Xe = x(5:6,1); % Current end effector position
+    
+    theta=x(1:2,1); % [x1;x2]=[x(1);x(2)]
+    dtheta=x(3:4,1); % [x1_dot;x2_dot]=[x(3);x(4)]
+
+    global l1 l2
+    I1=10;  I2 = 10; m1=5; r1=.5; m2=5; r2=.5; l1=1; l2=1; g=9.8;
+
+    % we compute the parameters in the dynamic model
+    a = I1+I2+m1*r1^2+ m2*(l1^2+ r2^2);
+    b = m2*l1*r2;
+    d = I2+ m2*r2^2;
+
+    global M C J he
+    M = [a+2*b*cos(x(2)), d+b*cos(x(2));
+        d+b*cos(x(2)), d];
+    C = [-b*sin(x(2))*x(4), -b*sin(x(2))*(x(3)+x(4)); b*sin(x(2))*x(3),0];
+
+    invM = inv(M);
+    invMC= inv(M)*C;
+    
+    J = getJacobian(theta(1),theta(2)); % Current Jacobian 
+    
+    tau = Controler(Xd,Xe,theta,dtheta);
+     
+    global torque 
+    torque = [torque, tau];
+    
+    dx = zeros(6,1);
+    dx(1)= x(3); %dtheta1 
+    dx(2)= x(4); %dtheta2
+    dx(3:4) = -invMC* x(3:4) + invM*tau - invM*(transpose(J)*he);
+    dx(5:6)= J*dx(3:4);
+end
+
+function tau = Controler(Xd,Xe,theta,dtheta)
+   
+   global he Force
+   Xr = [1.8; 0]; % Wall location
+   Kd = [6 0; 0 4];
+   % Kd makes sure that the tracking performance is optimum and it shows
+   % how jerky the system is. Here we have kept x higher than y to control
+   % the system in x direction. Therefore Kd is small where contact forces
+   % are low.
+   Bd = [1 0; 0 1];
+   % Bd is the damping coef which takes care of transient behaviour which
+   % smooths the system and also controls the rate aslo
+   K = [1000 0; 0 1000];
+   if (Xe(1) >= Xr(1)) 
+       he = K*(Xr - Xe);
+   else
+       he = [0; 0];
+   end
+   Force = [Force, he];
+   
+   P_e = Xd - Xe; % Position error
+    
+   global J 
+   tau = J.'*(Kd*P_e - Bd*J*dtheta) + he;   
+end
+
+function [qd] = InverseKinematics(x, y)
+    global l1 l2
+    q2 = acos((x*x + y*y - l1*l1 - l2*l2)/(2*l1*l2));
+    q1 = atan2(y, x) - atan2((l2*sin(q2)), (l1 + l2*cos(q2)));
+    qd = [q1;q2;];
+end
+
+function [X] = ForwardKinematics(q1, q2)
+    global l1 l2
+    x = l1*cos(q1) + l2*cos(q1 + q2);
+    y = l1*sin(q1) + l2*sin(q1 + q2);
+    X = [x;y;];
+end
+
+function [J] = getJacobian(q1, q2)
+    global l1 l2
+    j11 = -l1*sin(q1) - l2*sin(q1+q2);
+    j12 = -l2*sin(q1+q2);
+    j21 = l1*cos(q1) + l2*cos(q1+q2);
+    j22 = l2*cos(q1+q2);
+    J = [j11, j12; j21, j22];
+end
+##### SOURCE END #####
+--></body></html>

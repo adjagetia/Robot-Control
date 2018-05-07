@@ -1,0 +1,299 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Assignment 6</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-04-18"><meta name="DC.source" content="AdaptiveControl.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Assignment 6</h1><!--introduction--><p>By- Aishwary Jagetia</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Adaptive control design for one-link planar arm.</a></li><li><a href="#2">IMPLEMENTING THE CONTROLLER AND PLOTTING THE RESULTS</a></li></ul></div><h2 id="1">Adaptive control design for one-link planar arm.</h2><pre class="codeinput">clc
+clear <span class="string">all</span>;
+close <span class="string">all</span>;
+
+<span class="comment">% Initial condition</span>
+<span class="keyword">global</span> I mgd fv
+<span class="comment">% the nominal model parameter:</span>
+I = 7.5; mgd = 6.0; fv = 1.5; <span class="comment">% parameters in the paper.</span>
+Ii = 8.0; mgdi = 5.0; fvi = 2.5; <span class="comment">% parameters in the paper.</span>
+x0=[0.2,0.2,8.0,5.0,2.5]; <span class="comment">%[q,dq,Ii,mgdi,fvi]</span>
+tf = 100.0;
+
+<span class="keyword">global</span> torque
+torque=[];
+options = odeset(<span class="string">'RelTol'</span>,1e-4,<span class="string">'AbsTol'</span>,[1e-4, 1e-4, 1e-4, 1e-4, 1e-4]);
+</pre><h2 id="2">IMPLEMENTING THE CONTROLLER AND PLOTTING THE RESULTS</h2><pre class="codeinput">[T,X] = ode45(@(t,x)planarArmODEAdaptive(t,x),[0 tf],x0,options);
+
+figure(<span class="string">'Name'</span>,<span class="string">'Theta under Adaptive Control'</span>);
+plot(T, X(:,1),<span class="string">'r-'</span>);
+hold <span class="string">on</span>
+plot(T, -sin(T),<span class="string">'b-'</span>);
+ylabel(<span class="string">'Theta'</span>)
+xlabel(<span class="string">'Time'</span>)
+
+figure(<span class="string">'Name'</span>,<span class="string">'dTheta under Adaptive Control'</span>);
+plot(T, X(:,2),<span class="string">'r-'</span>);
+hold <span class="string">on</span>
+plot(T, -cos(T),<span class="string">'b-'</span>);
+ylabel(<span class="string">'dTheta'</span>)
+xlabel(<span class="string">'Time'</span>)
+
+figure(<span class="string">'Name'</span>,<span class="string">'I_bar under Adaptive Control'</span>);
+plot(T, X(:,3),<span class="string">'r-'</span>);
+hold <span class="string">on</span>
+plot(T, I*ones(size(T,1),1),<span class="string">'b-'</span>);
+ylabel(<span class="string">'I_bar'</span>)
+xlabel(<span class="string">'Time'</span>)
+
+figure(<span class="string">'Name'</span>,<span class="string">'mgd_bar under Adaptive Control'</span>);
+plot(T, X(:,4),<span class="string">'r-'</span>);
+hold <span class="string">on</span>
+plot(T, mgd*ones(size(T,1),1),<span class="string">'b-'</span>);
+ylabel(<span class="string">'mgd_bar'</span>)
+xlabel(<span class="string">'Time'</span>)
+
+figure(<span class="string">'Name'</span>,<span class="string">'fv_bar under Adaptive Control'</span>);
+plot(T, X(:,5),<span class="string">'r-'</span>);
+hold <span class="string">on</span>
+plot(T, fv*ones(size(T,1),1),<span class="string">'b-'</span>);
+ylabel(<span class="string">'fv_bar'</span>)
+xlabel(<span class="string">'Time'</span>)
+
+figure(<span class="string">'Name'</span>,<span class="string">'Adaptive Control'</span>);
+plot(T, torque(1,1:size(T,1)),<span class="string">'-'</span>);
+ylabel(<span class="string">'Torque'</span>)
+xlabel(<span class="string">'Time'</span>)
+hold <span class="string">off</span>
+torque=[];
+
+<span class="comment">% IMPLEMENTING THE CONTROLLER</span>
+<span class="keyword">function</span> [dx ] = planarArmODEAdaptive(t,x)
+
+    theta_d=[-sin(t)]; <span class="comment">% [x1d] Desired trajectory</span>
+    dtheta_d=[-cos(t)]; <span class="comment">% [x1d_dot]</span>
+    ddtheta_d=[sin(t)]; <span class="comment">% [x1d_ddot]</span>
+    theta=x(1,1); <span class="comment">% [x1]=[x(1)]</span>
+    dtheta=x(2,1); <span class="comment">% [x1_dot]=[x(2)]</span>
+
+    <span class="keyword">global</span> I mgd fv Mbar Cbar Nbar
+    M = I;
+    C = fv;
+    N = mgd*sin(x(1));
+    invM = inv(M);
+    invMC= inv(M)*C;
+    invMN= inv(M)*N;
+
+    Mbar = x(3);
+    Cbar = x(5);
+    Nbar = x(4)*sin(x(1));
+
+    tau = Controler(theta_d,dtheta_d,ddtheta_d,theta,dtheta);
+
+    <span class="keyword">global</span> torque
+    torque = [torque, tau];
+
+    <span class="keyword">global</span> a v r
+    H = 0.01*eye(3);
+
+    dx=zeros(5,1);
+    dx(1) = x(2);
+    dx(2) = -invMC* x(2) -invMN +invM*tau; <span class="comment">% because ddot theta = -M^{-1}(C \dot Theta) + M^{-1} tau</span>
+    Y = [a, sin(x(1)), v];
+    dx(3:5) = -inv(H)*transpose(Y)*r;
+<span class="keyword">end</span>
+
+<span class="comment">% Adaptive Control Law</span>
+<span class="keyword">function</span> tau = Controler(theta_d,dtheta_d,ddtheta_d,theta,dtheta)
+   P_e = theta - theta_d;
+   V_e = dtheta - dtheta_d;
+
+   <span class="keyword">global</span> r a v
+   Kv= 450*eye(1);
+   L = 1*eye(1);
+   a = ddtheta_d - L*V_e;
+   v = dtheta_d - L*P_e;
+   r = V_e + L*P_e;
+
+   <span class="keyword">global</span> Mbar Cbar Nbar
+   tau = Mbar*a + Cbar*v + Nbar - Kv*r;
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="AdaptiveControl_01.png" alt=""> <img vspace="5" hspace="5" src="AdaptiveControl_02.png" alt=""> <img vspace="5" hspace="5" src="AdaptiveControl_03.png" alt=""> <img vspace="5" hspace="5" src="AdaptiveControl_04.png" alt=""> <img vspace="5" hspace="5" src="AdaptiveControl_05.png" alt=""> <img vspace="5" hspace="5" src="AdaptiveControl_06.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Assignment 6
+% By- Aishwary Jagetia
+
+%% Adaptive control design for one-link planar arm.
+clc
+clear all;
+close all;
+
+% Initial condition 
+global I mgd fv
+% the nominal model parameter:
+I = 7.5; mgd = 6.0; fv = 1.5; % parameters in the paper.
+Ii = 8.0; mgdi = 5.0; fvi = 2.5; % parameters in the paper.
+x0=[0.2,0.2,8.0,5.0,2.5]; %[q,dq,Ii,mgdi,fvi]
+tf = 100.0;
+
+global torque
+torque=[];
+options = odeset('RelTol',1e-4,'AbsTol',[1e-4, 1e-4, 1e-4, 1e-4, 1e-4]);
+
+%% IMPLEMENTING THE CONTROLLER AND PLOTTING THE RESULTS
+[T,X] = ode45(@(t,x)planarArmODEAdaptive(t,x),[0 tf],x0,options);
+
+figure('Name','Theta under Adaptive Control');
+plot(T, X(:,1),'r-');
+hold on
+plot(T, -sin(T),'b-');
+ylabel('Theta')
+xlabel('Time')
+
+figure('Name','dTheta under Adaptive Control');
+plot(T, X(:,2),'r-');
+hold on
+plot(T, -cos(T),'b-');
+ylabel('dTheta')
+xlabel('Time')
+
+figure('Name','I_bar under Adaptive Control');
+plot(T, X(:,3),'r-');
+hold on
+plot(T, I*ones(size(T,1),1),'b-');
+ylabel('I_bar')
+xlabel('Time')
+
+figure('Name','mgd_bar under Adaptive Control');
+plot(T, X(:,4),'r-');
+hold on
+plot(T, mgd*ones(size(T,1),1),'b-');
+ylabel('mgd_bar')
+xlabel('Time')
+
+figure('Name','fv_bar under Adaptive Control');
+plot(T, X(:,5),'r-');
+hold on
+plot(T, fv*ones(size(T,1),1),'b-');
+ylabel('fv_bar')
+xlabel('Time')
+
+figure('Name','Adaptive Control');
+plot(T, torque(1,1:size(T,1)),'-');
+ylabel('Torque')
+xlabel('Time')
+hold off
+torque=[];
+
+% IMPLEMENTING THE CONTROLLER
+function [dx ] = planarArmODEAdaptive(t,x)
+   
+    theta_d=[-sin(t)]; % [x1d] Desired trajectory
+    dtheta_d=[-cos(t)]; % [x1d_dot]
+    ddtheta_d=[sin(t)]; % [x1d_ddot]
+    theta=x(1,1); % [x1]=[x(1)]
+    dtheta=x(2,1); % [x1_dot]=[x(2)]
+
+    global I mgd fv Mbar Cbar Nbar 
+    M = I;
+    C = fv;
+    N = mgd*sin(x(1));
+    invM = inv(M);
+    invMC= inv(M)*C;  
+    invMN= inv(M)*N;
+
+    Mbar = x(3);
+    Cbar = x(5);
+    Nbar = x(4)*sin(x(1));
+
+    tau = Controler(theta_d,dtheta_d,ddtheta_d,theta,dtheta);
+    
+    global torque
+    torque = [torque, tau];
+    
+    global a v r
+    H = 0.01*eye(3);
+    
+    dx=zeros(5,1);
+    dx(1) = x(2);
+    dx(2) = -invMC* x(2) -invMN +invM*tau; % because ddot theta = -M^{-1}(C \dot Theta) + M^{-1} tau
+    Y = [a, sin(x(1)), v];
+    dx(3:5) = -inv(H)*transpose(Y)*r;
+end
+
+% Adaptive Control Law
+function tau = Controler(theta_d,dtheta_d,ddtheta_d,theta,dtheta)
+   P_e = theta - theta_d;
+   V_e = dtheta - dtheta_d;
+
+   global r a v
+   Kv= 450*eye(1);
+   L = 1*eye(1);
+   a = ddtheta_d - L*V_e;
+   v = dtheta_d - L*P_e;
+   r = V_e + L*P_e;
+
+   global Mbar Cbar Nbar
+   tau = Mbar*a + Cbar*v + Nbar - Kv*r;
+end
+
+##### SOURCE END #####
+--></body></html>
